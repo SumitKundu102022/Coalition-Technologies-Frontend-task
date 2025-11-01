@@ -6,8 +6,6 @@ import {
   MessageSquare,
   CreditCard,
   Settings,
-  Bell,
-  Search,
   Users,
   MoreVertical,
 } from "lucide-react";
@@ -36,7 +34,7 @@ const navVariants: any = {
     },
 };
 
-const TopNav: React.FC<TopNavProps> = ({ currentPatientName }) => {
+const TopNav: React.FC<TopNavProps> = ({  }) => {
   // Nav Items Data
   const navItems = [
     { icon: Home, label: "Overview", active: false },
