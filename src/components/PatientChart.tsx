@@ -37,72 +37,6 @@ interface PatientChartProps {
   history: DiagnosisHistory[];
 }
 
-// const PatientChart: React.FC<PatientChartProps> = ({ history }) => {
-//   // Only use the last 6 entries for a cleaner chart if the history is long
-//   const chartHistory = history.slice(0, 6).reverse();
-
-//   const data = {
-//     labels: chartHistory.map((item) => `${item.month}, ${item.year}`),
-//     datasets: [
-//       {
-//         label: "Systolic",
-//         data: chartHistory.map((item) => item.blood_pressure.systolic.value),
-//         borderColor: "#01F0CC", // Primary accent color
-//         backgroundColor: "rgba(1, 240, 204, 0.2)",
-//         tension: 0.4,
-//         fill: true,
-//         pointRadius: 6,
-//         pointBackgroundColor: "white",
-//         pointBorderWidth: 2,
-//       },
-//       {
-//         label: "Diastolic",
-//         data: chartHistory.map((item) => item.blood_pressure.diastolic.value),
-//         borderColor: "#6C707C", // A gray color for contrast
-//         backgroundColor: "rgba(108, 112, 124, 0.2)",
-//         tension: 0.4,
-//         fill: true,
-//         pointRadius: 6,
-//         pointBackgroundColor: "white",
-//         pointBorderWidth: 2,
-//       },
-//     ],
-//   };
-
-//   const options = {
-//     responsive: true,
-//     maintainAspectRatio: false,
-//     plugins: {
-//       legend: {
-//         position: "bottom" as const,
-//         labels: {
-//           usePointStyle: true,
-//           boxWidth: 8,
-//         },
-//       },
-//       title: {
-//         display: false,
-//       },
-//       tooltip: {
-//         // Customize tooltips to look like the design if needed
-//       },
-//     },
-//     scales: {
-//       x: {
-//         grid: {
-//           display: false,
-//         },
-//       },
-//       y: {
-//         beginAtZero: false,
-//         // Customize Y-axis lines to match the design (e.g., dashed lines)
-//       },
-//     },
-//   };
-
-//   return <Line data={data} options={options} />;
-// };
-
 
 const PatientChart: React.FC<PatientChartProps> = ({ history }) => {
   // Reverse and simplify history for chart
@@ -152,7 +86,7 @@ const PatientChart: React.FC<PatientChartProps> = ({ history }) => {
         min: 60, // Set minimum Y-axis value
         max: 180, // Set maximum Y-axis value
         grid: {
-          borderDash: [5, 5],
+          // borderDash: [5, 5],
           color: "rgba(0, 0, 0, 0.1)",
         },
       },

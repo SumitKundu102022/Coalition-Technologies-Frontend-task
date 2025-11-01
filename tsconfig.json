@@ -10,6 +10,21 @@
         "systolic-pink": "#E66F7F", // Custom color for Systolic line and text
         "diastolic-purple": "#986BFF" // Custom color for Diastolic line and text
         // Existing colors like 'primary-accent', 'sidebar-dark', etc.
+      },
+      "fontFamily": {
+        // 'sans' is the default Tailwind font utility (used by default on the <body>)
+        "sans": [
+          "Manrope",
+          "ui-sans-serif",
+          "system-ui",
+          "-apple-system",
+          "Segoe UI",
+          "Roboto",
+          "Helvetica Neue",
+          "Arial",
+          "Noto Sans",
+          "sans-serif"
+        ]
       }
     }
   }

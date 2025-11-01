@@ -1,6 +1,5 @@
 import { motion } from "framer-motion";
-import { Menu, MoreHorizontal, MoreHorizontalIcon, MoreVertical, Search, User } from "lucide-react"; // Added User for patient list item
-import doctorIcon from "../assets/TestLogo.svg";
+import { MoreHorizontal, Search} from "lucide-react"; // Added User for patient list item
 // Define the Patient interface (you can import it from App.tsx)
 interface Patient {
   // Simplified structure for the sidebar display
@@ -23,7 +22,7 @@ const PatientSidebar: React.FC<PatientSidebarProps> = ({
 }) => {
   // Framer Motion Variants for Sidebar Animation
   const sidebarVariants = {
-    hidden: { x: "-100%" },
+    hidden: { x: "-30%" },
     visible: {
       x: "0%",
       transition: { type: "spring" as const, stiffness: 100 },
@@ -32,7 +31,7 @@ const PatientSidebar: React.FC<PatientSidebarProps> = ({
 
   return (
     <motion.aside
-      className="w-80 bg-sidebar-dark text-white p-6 flex flex-col h-screen"
+      className="w-80 mt-7 ml-2 bg-sidebar-dark text-white p-6 flex flex-col h-min rounded-2xl shadow-lg border border-gray-100"
       initial="hidden"
       animate="visible"
       variants={sidebarVariants}
@@ -60,7 +59,7 @@ const PatientSidebar: React.FC<PatientSidebarProps> = ({
         </nav>
       </div>
       {/* Dynamic Patient List */}
-      <div className="flex flex-col h-screen mt-6">
+      <div className="flex flex-col h-215 mt-6">
         <div className="flex-1 overflow-y-auto space-y-2 custom-scrollbar">
           {patients.map((patient) => (
             <div

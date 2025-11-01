@@ -1,11 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { motion } from "framer-motion";
 import {
-  Menu,
-  Search,
-  Briefcase,
-  Calendar,
-  Heart,
   Download,
 } from "lucide-react"; // Example icons
 import PatientChart from "./components/PatientChart";
@@ -18,6 +12,9 @@ import TemperatureImage from "./assets/temperature.svg";
 import HeartRateImage from "./assets/HeartBPM.svg";
 import UpArrowIcon from "./assets/ArrowUp.svg";
 import DownArrowIcon from "./assets/ArrowDown.svg";
+import Spinner from "./components/Spinner";
+import { TriangleAlert } from "lucide-react";
+import { motion } from "framer-motion";
 
 const username = import.meta.env.VITE_API_USERNAME;
 const password = import.meta.env.VITE_API_PASSWORD;
@@ -63,7 +60,6 @@ const App: React.FC = () => {
   const [allPatients, setAllPatients] = useState<Patient[]>([]);
   const [patient, setPatient] = useState<Patient | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [onSelectPatient, setOnSelectPatient] = useState<((patient: Patient) => void) | null>(null);
 
   useEffect(() => {
     const fetchPatientData = async () => {
@@ -100,8 +96,26 @@ const App: React.FC = () => {
   }, []);
 
   // Function passed to the sidebar to change the active patient
-  const handleSelectPatient = (patient: Patient) => {
-    setPatient(patient);
+  // Accept a permissive type here to avoid cross-module duplicate-type incompatibilities,
+  // then cast to the App's Patient shape when setting state.
+  const handleSelectPatient = (patient: any) => {
+    setPatient(patient as Patient);
+  };
+
+  // --- Framer Motion Variants for Vital Cards ---
+  const vitalCardVariants = {
+    hidden: { y: 20, opacity: 0 }, // Start slightly below and transparent
+    visible: (i: number) => ({
+      // Use a function to accept a custom delay based on index
+      y: 0,
+      opacity: 1,
+      transition: {
+        type: "spring" as const,
+        stiffness: 100,
+        damping: 20,
+        delay: i * 0.1 + 0.5, // Staggered delay: 0.5s initial + 0.1s for each card
+      },
+    }),
   };
 
   // Helper to render the small vital cards (Respiratory, Temperature, Heart Rate)
@@ -109,12 +123,17 @@ const App: React.FC = () => {
     vital: Vital | undefined,
     title: string,
     icon: React.ReactElement,
-    colorClass: string // New prop for color theme
+    colorClass: string, // New prop for color theme
+    index: number
     // analysis: string
   ) => (
-    <div
+    <motion.div
       className={`p-6 rounded-3xl flex flex-col justify-between ${colorClass} h-[200px]`}
       key={title}
+      variants={vitalCardVariants} // Apply the vitalCardVariants
+      initial="hidden"
+      animate="visible"
+      custom={index} // Pass the index as a custom prop for staggered animation
     >
       <div className="flex flex-col items-start">
         {/* Icon (The icon component itself will be styled by the colorClass) */}
@@ -150,21 +169,24 @@ const App: React.FC = () => {
           </p>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center h-screen text-2xl">
-        Loading Patient Data...
-      </div>
+      <>
+        <Spinner />
+      </>
     );
   }
 
   if (!patient) {
     return (
-      <div className="flex justify-center items-center h-screen text-2xl text-red-600">
-        Failed to load patient data or patient not found.
+      <div className="flex justify-center items-center h-screen font-bold text-2xl text-blue-950 bg-linear-to-r from-gray-300 via-teal-500 to-teal-950">
+        <TriangleAlert />
+        <p className="ml-2">
+          Failed to load patient data or patient not found.
+        </p>
       </div>
     );
   }
@@ -192,10 +214,14 @@ const App: React.FC = () => {
       <div className="flex items-center space-x-1 text-sm text-gray-500">
         {/* Analysis Icon (Up/Down arrow) - Need to determine trend based on 'levels' */}
         {vital?.levels.includes("Higher") && (
-          <span className="text-red-500"><img src={UpArrowIcon} alt="Up Arrow" /></span>
+          <span className="text-red-500">
+            <img src={UpArrowIcon} alt="Up Arrow" />
+          </span>
         )}
         {vital?.levels.includes("Lower") && (
-          <span className="text-blue-500"><img src={DownArrowIcon} alt="Down Arrow" /></span>
+          <span className="text-blue-500">
+            <img src={DownArrowIcon} alt="Down Arrow" />
+          </span>
         )}
         <p>{vital?.levels || "Normal"}</p>
       </div>
@@ -205,9 +231,9 @@ const App: React.FC = () => {
   return (
     <>
       {" "}
-      <div className="flex flex-col h-screen">
+      <div className="flex flex-col h-screen overflow-hidden">
         <TopNav currentPatientName={patient.name} />
-        <div className="flex h-screen">
+        <div className="flex h-screen overflow-x-hidden">
           {/* Sidebar Component (Handles the patient list and selection) */}
           <PatientSidebar
             patients={allPatients}
@@ -221,7 +247,7 @@ const App: React.FC = () => {
               {/* Column 1: Patient Information Card & Diagnosis History */}
               <div className="col-span-2 space-y-6">
                 {/* Diagnosis History - Graph and Vitals */}
-                <div className="bg-card-bg p-6 rounded-3xl shadow-lg">
+                <div className="bg-card-bg p-6 rounded-3xl shadow-lg border border-gray-100">
                   <h3 className="text-xl font-bold text-text-dark-gray mb-4">
                     Diagnosis History
                   </h3>
@@ -278,7 +304,8 @@ const App: React.FC = () => {
                         src={BriefcaseImage}
                         alt="Respiratory rate"
                       />,
-                      "bg-[#E0F3FA]" // Light Blue background
+                      "bg-[#E0F3FA]", // Light Blue background
+                      0
                     )}
                     {renderVitalCard(
                       patient.diagnosis_history[0]?.temperature,
@@ -288,7 +315,8 @@ const App: React.FC = () => {
                         src={TemperatureImage}
                         alt="Temperature"
                       />,
-                      "bg-[#FFE6E9]" // Light Pink background
+                      "bg-[#FFE6E9]", // Light Pink background
+                      1
                       // <Calendar className="w-4 h-4 text-sidebar-dark" />
                     )}
                     {renderVitalCard(
@@ -299,37 +327,38 @@ const App: React.FC = () => {
                         src={HeartRateImage}
                         alt="Heart Rate"
                       />,
-                      "bg-[#FFE6F1]" // Light Pink background
+                      "bg-[#FFE6F1]", // Light Pink background
+                      2
                       // <Heart className="w-4 h-4 text-sidebar-dark" />
                     )}
                   </div>
                 </div>
 
                 {/* Diagnostic List */}
-                <div className="bg-card-bg p-6 rounded-3xl shadow-lg">
+                <div className="bg-card-bg p-6 rounded-3xl shadow-lg border border-gray-100 mb-2">
                   <h3 className="text-xl font-bold text-text-dark-gray mb-4">
                     Diagnostic List
                   </h3>
 
-                  <div className="bg-white rounded-xl shadow-inner border border-gray-100">
+                  <div className="bg-white rounded-xl border-none">
                     {/* Table Header (Fixed) */}
-                    <div className="grid grid-cols-6 gap-4 p-3 font-semibold text-gray-500 bg-gray-100 rounded-t-xl">
+                    <div className="grid grid-cols-6 gap-4 p-3 font-semibold text-[#072635] bg-gray-100 rounded-full">
                       <p className="col-span-2">Problem/Diagnosis</p>
                       <p className="col-span-3">Description</p>
                       <p className="col-span-1">Status</p>
                     </div>
 
                     {/* Table Body (Scrollable) */}
-                    <div className="max-h-80 flex flex-col h-50">
+                    <div className="max-h-80 flex flex-col h-40">
                       <div className="flex-1 overflow-y-auto space-y-2 custom-scrollbar">
                         {patient.diagnostic_list.map((item, index) => (
                           <div
                             key={index}
                             // Grid structure to align with the header
-                            className="grid grid-cols-6 gap-4 items-center p-3 border-b border-gray-100 hover:bg-gray-100 transition-colors"
+                            className="grid grid-cols-6 gap-4 items-center p-3 border-b border-gray-100 hover:bg-none transition-colors"
                           >
                             {/* Problem/Diagnosis */}
-                            <p className="col-span-2 font-semibold text-text-dark-gray">
+                            <p className="col-span-2 text-sm text-gray-600">
                               {item.name}
                             </p>
                             {/* Description */}
@@ -349,30 +378,29 @@ const App: React.FC = () => {
               </div>
 
               {/* Column 2: Diagnostic List & Lab Results */}
-              <div className="col-span-1 space-y-6">
+              <div className="col-span-1 space-y-8">
                 {/* Patient Information Card */}
                 {/* RIGHT COLUMN: Patient Information Card */}
                 <aside className="col-span-1 h-auto">
                   <PatientDetailCard patient={patient} />
                 </aside>
                 {/* Lab Results */}
-                <div className="bg-card-bg p-6 rounded-3xl shadow-lg">
+                <div className="bg-card-bg p-6 rounded-3xl shadow-lg border border-gray-100">
                   <h3 className="text-xl font-bold text-text-dark-gray mb-4">
                     Lab Results
                   </h3>
-                  <div className="flex flex-col h-50">
+                  <div className="flex flex-col h-35">
                     <div className="flex-1 overflow-y-auto space-y-2 custom-scrollbar">
                       {patient.lab_results.slice(0, 5).map((result, index) => (
-                      <div
-                        key={index}
-                        className="flex justify-between items-center bg-bg-light-gray p-3 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
-                      >
-                        <p className="text-text-dark-gray">{result}</p>
-                        <Download className="w-5 h-5 text-gray-500" />
-                      </div>
-                    ))}
+                        <div
+                          key={index}
+                          className="flex justify-between items-center bg-bg-light-gray p-3 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
+                        >
+                          <p className="text-sm text-gray-600">{result}</p>
+                          <Download className="w-5 h-5 text-gray-500" />
+                        </div>
+                      ))}
                     </div>
-                    
                   </div>
                 </div>
               </div>

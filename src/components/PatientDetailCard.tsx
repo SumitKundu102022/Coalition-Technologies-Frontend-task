@@ -2,15 +2,12 @@
 import React from "react";
 import {
   Calendar,
-  User,
   Phone,
-  PhoneCall,
-  DollarSign,
-  MoreVertical,
   Venus,
   Mars,
   ShieldCheck,
 } from "lucide-react";
+import { motion } from "framer-motion";
 // Import the Patient interface from App.tsx
 
 interface Patient {
@@ -22,6 +19,23 @@ interface Patient {
   insurance_type: string;
   profile_picture: string;
 }
+
+// 1. Define the variants for the animation
+const cardVariants = {
+    // Hidden state: slightly off to the right and transparent
+    hidden: { x: 50, opacity: 0 }, 
+    // Visible state: move back to original position (x: 0) and fully visible
+    visible: {
+        x: 0,
+        opacity: 1,
+        transition: {
+            type: "spring" as const,
+            stiffness: 100,
+            damping: 20,
+            delay: 0.3, // A slight delay after the TopNav and Sidebar to look coordinated
+        },
+    },
+};
 
 interface PatientDetailCardProps {
   patient: Patient;
@@ -68,7 +82,13 @@ const PatientDetailCard: React.FC<PatientDetailCardProps> = ({ patient }) => {
   const formattedDOB = formatDateOfBirth(patient.date_of_birth);
 
   return (
-    <div className="bg-card-bg p-6 rounded-3xl shadow-lg flex flex-col items-center h-full">
+    <motion.div
+      className="bg-card-bg p-6 rounded-3xl shadow-lg flex flex-col items-center h-full border border-gray-100"
+      key={patient.name} // 3. IMPORTANT: Use the patient name/ID as the key
+      variants={cardVariants}
+      initial="hidden"
+      animate="visible"
+    >
       {/* Profile Image and Name */}
       <div className="relative mb-6">
         <img
@@ -122,7 +142,7 @@ const PatientDetailCard: React.FC<PatientDetailCardProps> = ({ patient }) => {
       <button className="mt-8 w-full py-3 bg-primary-accent text-sidebar-dark font-bold rounded-full hover:bg-teal-200 bg-teal-300 transition-opacity cursor-pointer">
         Show All Details
       </button>
-    </div>
+    </motion.div>
   );
 };
 
